@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Next.js vs TanStack Start — сравнение для ict_front</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a1628;
+    --bg-2:#0d1b2a;
+    --card:rgba(255,255,255,0.05);
+    --card-2:rgba(255,255,255,0.03);
+    --stroke:rgba(255,255,255,0.10);
+    --stroke-2:rgba(255,255,255,0.06);
+    --text:#e8eef7;
+    --muted:#93a4bd;
+    --dim:#6b7f9c;
+    --next:#0070f3;
+    --next-soft:rgba(0,112,243,0.14);
+    --start:#f97316;
+    --start-soft:rgba(249,115,22,0.14);
+    --good:#22c55e;
+    --good-soft:rgba(34,197,94,0.13);
+    --bad:#ef4444;
+    --bad-soft:rgba(239,68,68,0.13);
+    --warn:#eab308;
+    --warn-soft:rgba(234,179,8,0.13);
+    --radius:16px;
+  }
+
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    background:
+      radial-gradient(1100px 620px at 12% -8%, rgba(249,115,22,0.10), transparent 62%),
+      radial-gradient(1000px 620px at 92% 2%, rgba(0,112,243,0.13), transparent 60%),
+      var(--bg);
+    background-attachment:fixed;
+    color:var(--text);
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    font-size:15px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+  }
+  code,.mono{font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:0.88em}
+  code{background:rgba(255,255,255,0.07);border:1px solid var(--stroke-2);border-radius:5px;padding:1px 5px;color:#cfe0f5}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 90px}
+
+  /* ---------- header ---------- */
+  header{padding:52px 0 26px}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600;
+    color:var(--muted);border:1px solid var(--stroke);border-radius:999px;
+    padding:5px 13px;background:var(--card-2);
+  }
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--start);box-shadow:0 0 10px var(--start)}
+  h1{
+    font-size:clamp(30px,5.2vw,50px);line-height:1.1;margin:20px 0 12px;
+    font-weight:800;letter-spacing:-0.025em;
+  }
+  h1 .vs{color:var(--dim);font-weight:600;font-size:0.62em;vertical-align:middle;padding:0 6px}
+  h1 .n{color:var(--next);text-shadow:0 0 34px rgba(0,112,243,0.55)}
+  h1 .s{color:var(--start);text-shadow:0 0 34px rgba(249,115,22,0.5)}
+  .lead{color:var(--muted);max-width:74ch;font-size:16.5px;margin:0}
+
+  .facts{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .fact{
+    background:var(--card);border:1px solid var(--stroke);border-radius:12px;
+    padding:9px 14px;display:flex;align-items:baseline;gap:9px;
+  }
+  .fact b{font-size:17px;font-weight:700;letter-spacing:-0.01em}
+  .fact span{font-size:12.5px;color:var(--muted)}
+
+  /* ---------- tabs ---------- */
+  .tabs{
+    position:sticky;top:0;z-index:40;
+    display:flex;gap:6px;padding:10px 0 12px;margin:30px 0 4px;
+    background:linear-gradient(to bottom,var(--bg) 62%,rgba(10,22,40,0));
+    backdrop-filter:blur(6px);
+    flex-wrap:wrap;
+  }
+  .tab{
+    appearance:none;cursor:pointer;
+    background:var(--card-2);border:1px solid var(--stroke);color:var(--muted);
+    font-family:inherit;font-size:14.5px;font-weight:600;
+    padding:11px 20px;border-radius:11px;
+    transition:all .2s ease;
+  }
+  .tab:hover{color:var(--text);border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.07)}
+  .tab.active{
+    color:#fff;border-color:rgba(249,115,22,0.55);
+    background:linear-gradient(180deg,rgba(249,115,22,0.22),rgba(249,115,22,0.10));
+    box-shadow:0 0 0 1px rgba(249,115,22,0.16),0 8px 26px rgba(249,115,22,0.16);
+  }
+
+  .tab-content{display:none}
+  .tab-content.active{display:block;animation:fade .42s ease both}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ---------- typography ---------- */
+  h2{
+    font-size:26px;font-weight:750;letter-spacing:-0.02em;margin:52px 0 6px;
+    display:flex;align-items:flex-start;gap:12px;
+  }
+  h2::before{content:"";flex:0 0 4px;width:4px;height:23px;margin-top:5px;border-radius:2px;background:var(--start);box-shadow:0 0 14px rgba(249,115,22,.6)}
+  h2.blue::before{background:var(--next);box-shadow:0 0 14px rgba(0,112,243,.6)}
+  h3{font-size:17px;font-weight:700;margin:0 0 14px;letter-spacing:-0.01em}
+  .sub{color:var(--muted);margin:0 0 22px;max-width:88ch}
+  p{margin:0 0 14px}
+  .section-sep{height:1px;background:linear-gradient(to right,var(--stroke),transparent);margin:0 0 24px}
+
+  /* ---------- cards ---------- */
+  .card{
+    background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);
+    padding:22px 24px;box-shadow:0 10px 34px rgba(0,0,0,0.30);
+  }
+  .grid{display:grid;gap:18px}
+  /* единый порядок по всей странице: Next.js слева / первым, TanStack Start справа / вторым */
+  .grid.nx-first > :nth-child(1){order:2}
+  .grid.nx-first > :nth-child(2){order:1}
+  .g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+
+  /* verdict cards */
+  .verdict{position:relative;overflow:hidden}
+  .verdict::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:var(--radius)}
+  .verdict.start{border-color:rgba(249,115,22,0.42);box-shadow:0 0 0 1px rgba(249,115,22,0.10),0 14px 46px rgba(249,115,22,0.14)}
+  .verdict.next{border-color:rgba(0,112,243,0.38);box-shadow:0 0 0 1px rgba(0,112,243,0.10),0 14px 46px rgba(0,112,243,0.12)}
+  .verdict .name{font-size:14px;font-weight:700;letter-spacing:.02em;text-transform:uppercase}
+  .verdict.start .name{color:var(--start)}
+  .verdict.next .name{color:#4d9bff}
+  .score{font-size:56px;font-weight:800;line-height:1;letter-spacing:-0.045em;margin:12px 0 2px}
+  .verdict.start .score{color:#fff;text-shadow:0 0 40px rgba(249,115,22,0.75)}
+  .verdict.next .score{color:#fff;text-shadow:0 0 40px rgba(0,112,243,0.7)}
+  .score small{font-size:18px;font-weight:600;color:var(--dim);letter-spacing:0}
+  .verdict ul{margin:14px 0 0;padding:0;list-style:none;font-size:14px}
+  .verdict li{padding:5px 0;color:var(--muted);border-top:1px solid var(--stroke-2)}
+  .verdict li b{color:var(--text);font-weight:650}
+
+  .badge{
+    display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 9px;border-radius:6px;margin-left:auto;
+  }
+  .badge.win{background:var(--good-soft);color:var(--good);border:1px solid rgba(34,197,94,.35)}
+  .badge.lose{background:rgba(255,255,255,.05);color:var(--dim);border:1px solid var(--stroke)}
+  .badge.neutral{background:rgba(255,255,255,.06);color:var(--muted);border:1px solid var(--stroke);letter-spacing:.05em}
+
+  /* stat tiles */
+  .tile{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:18px 20px}
+  .tile .num{font-size:32px;font-weight:800;letter-spacing:-0.03em;line-height:1.1}
+  .tile .num.o{color:var(--start);text-shadow:0 0 26px rgba(249,115,22,.5)}
+  .tile .num.b{color:#4d9bff;text-shadow:0 0 26px rgba(0,112,243,.5)}
+  .tile .num.g{color:var(--good);text-shadow:0 0 26px rgba(34,197,94,.45)}
+  .tile .num.r{color:var(--bad);text-shadow:0 0 26px rgba(239,68,68,.45)}
+  .tile .lbl{color:var(--muted);font-size:13.5px;margin-top:6px}
+
+  /* ---------- tables ---------- */
+  .table-wrap{
+    overflow-x:auto;border:1px solid var(--stroke);border-radius:var(--radius);
+    background:var(--card);box-shadow:0 10px 34px rgba(0,0,0,.28);
+  }
+  table{width:100%;border-collapse:collapse;min-width:620px;font-size:14px}
+  thead th{
+    text-align:left;font-weight:650;font-size:12px;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--dim);padding:14px 16px;background:rgba(255,255,255,0.035);
+    border-bottom:1px solid var(--stroke);white-space:nowrap;
+  }
+  tbody td{padding:12px 16px;border-bottom:1px solid var(--stroke-2);vertical-align:top}
+  tbody tr{transition:background .16s ease}
+  tbody tr:hover{background:rgba(255,255,255,0.045)}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr.total{background:rgba(255,255,255,0.05);font-weight:700}
+  tbody tr.total:hover{background:rgba(255,255,255,0.075)}
+  tbody tr.total td{border-top:1px solid var(--stroke);font-size:15px}
+  .num-col{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  th.num-col{text-align:right}
+  .hint{color:var(--muted);font-size:13px}
+
+  .v{display:inline-block;padding:2px 9px;border-radius:7px;font-weight:700;font-variant-numeric:tabular-nums;min-width:34px;text-align:center}
+  .v.n{background:var(--next-soft);color:#69adff;border:1px solid rgba(0,112,243,.3)}
+  .v.s{background:var(--start-soft);color:#fb923c;border:1px solid rgba(249,115,22,.3)}
+  .v.win{box-shadow:0 0 16px rgba(255,255,255,.10);font-weight:800}
+  .v.s.win{background:rgba(249,115,22,.26);color:#ffb37a;border-color:rgba(249,115,22,.6)}
+  .v.n.win{background:rgba(0,112,243,.26);color:#8cc2ff;border-color:rgba(0,112,243,.6)}
+  .delta{color:var(--good);font-weight:700;font-variant-numeric:tabular-nums}
+  .delta.zero{color:var(--dim);font-weight:500}
+  .w{color:var(--dim);font-variant-numeric:tabular-nums}
+
+  .lvl{display:inline-flex;align-items:center;gap:7px;font-weight:600;font-size:13.5px;white-space:nowrap}
+  .lvl::before{content:"";width:8px;height:8px;border-radius:50%}
+  .lvl.low{color:var(--good)}    .lvl.low::before{background:var(--good);box-shadow:0 0 9px var(--good)}
+  .lvl.mid{color:var(--warn)}    .lvl.mid::before{background:var(--warn);box-shadow:0 0 9px var(--warn)}
+  .lvl.high{color:var(--bad)}    .lvl.high::before{background:var(--bad);box-shadow:0 0 9px var(--bad)}
+  .risk-note{display:block;color:var(--dim);font-size:12.5px;font-weight:400;margin-top:2px;padding-left:15px}
+
+  .yes{color:var(--good);font-weight:650}
+  .no{color:var(--bad);font-weight:650}
+
+  /* ---------- pros / cons ---------- */
+  .pc h3{display:flex;align-items:center;gap:10px}
+  .pc.start{border-color:rgba(249,115,22,.34)}
+  .pc.next{border-color:rgba(0,112,243,.32)}
+  .pc .mark{width:9px;height:9px;border-radius:3px}
+  .pc.start .mark{background:var(--start);box-shadow:0 0 12px var(--start)}
+  .pc.next .mark{background:var(--next);box-shadow:0 0 12px var(--next)}
+  .pc ul{list-style:none;margin:0;padding:0}
+  .pc li{
+    display:flex;gap:11px;align-items:flex-start;
+    padding:8px 0;font-size:14px;border-bottom:1px solid var(--stroke-2);
+  }
+  .pc li:last-child{border-bottom:none}
+  .pc li .ic{
+    flex:0 0 20px;height:20px;border-radius:6px;display:grid;place-items:center;
+    font-size:12px;font-weight:800;margin-top:1px;
+  }
+  .pc li.p .ic{background:var(--good-soft);color:var(--good);border:1px solid rgba(34,197,94,.3)}
+  .pc li.m .ic{background:var(--bad-soft);color:var(--bad);border:1px solid rgba(239,68,68,.3)}
+  .pc .divider{
+    margin:16px 0 6px;font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;
+    color:var(--dim);font-weight:700;
+  }
+
+  /* ---------- feature lists ---------- */
+  .feat{border-color:var(--stroke)}
+  .feat.start{border-color:rgba(249,115,22,.34)}
+  .feat.next{border-color:rgba(0,112,243,.32)}
+  .feat h3{display:flex;align-items:center;gap:10px}
+  .feat .mark{width:9px;height:9px;border-radius:3px;flex:0 0 9px}
+  .feat.start .mark{background:var(--start);box-shadow:0 0 12px var(--start)}
+  .feat.next .mark{background:var(--next);box-shadow:0 0 12px var(--next)}
+  .feat ul{list-style:none;margin:0;padding:0}
+  .feat li{
+    padding:11px 0;font-size:14px;border-bottom:1px solid var(--stroke-2);
+    color:var(--muted);
+  }
+  .feat li:last-child{border-bottom:none;padding-bottom:0}
+  .feat li strong{
+    display:block;color:var(--text);font-weight:650;margin-bottom:2px;
+    font-size:14.5px;
+  }
+  .feat.start li strong::before{content:"▸ ";color:var(--start)}
+  .feat.next li strong::before{content:"▸ ";color:#4d9bff}
+
+  /* ---------- comparison pairs ---------- */
+  .pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0;border-radius:var(--radius);overflow:hidden;border:1px solid var(--stroke);background:var(--card);box-shadow:0 10px 34px rgba(0,0,0,.28)}
+  .pair > div{padding:18px 22px}
+  .pair > div:first-child{border-right:1px solid var(--stroke)}
+  .pair h4{margin:0 0 8px;font-size:14px;font-weight:700;letter-spacing:.02em}
+  .pair .n4{color:#4d9bff}
+  .pair .s4{color:var(--start)}
+  .pair p{font-size:14px;color:var(--muted);margin:0}
+  .pair p + p{margin-top:9px}
+  .pair-title{
+    font-size:12px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;
+    color:var(--dim);margin:26px 0 10px;
+  }
+  @media (max-width:720px){
+    .pair{grid-template-columns:1fr}
+    .pair > div:first-child{border-right:none;border-bottom:1px solid var(--stroke)}
+  }
+
+  /* ---------- chart ---------- */
+  .chart-card{
+    background:var(--card);border:1px solid var(--stroke);border-radius:var(--radius);
+    padding:20px 22px 12px;box-shadow:0 10px 34px rgba(0,0,0,.28);
+  }
+  .chart-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .chart-head h3{margin:0}
+  .chart-head .note{color:var(--dim);font-size:12.5px}
+  .chart-box{position:relative;height:380px}
+  .chart-box.short{height:300px}
+
+  /* ---------- callout ---------- */
+  .callout{
+    border-left:3px solid var(--start);border-radius:0 14px 14px 0;
+    background:linear-gradient(90deg,rgba(249,115,22,.11),rgba(249,115,22,.02));
+    padding:16px 20px;margin:22px 0 0;
+  }
+  .callout.blue{border-left-color:var(--next);background:linear-gradient(90deg,rgba(0,112,243,.12),rgba(0,112,243,.02))}
+  .callout.green{border-left-color:var(--good);background:linear-gradient(90deg,rgba(34,197,94,.11),rgba(34,197,94,.02))}
+  .callout p:last-child{margin-bottom:0}
+  .callout .t{font-weight:700;display:block;margin-bottom:4px}
+
+  footer{
+    margin-top:70px;padding-top:24px;border-top:1px solid var(--stroke-2);
+    color:var(--dim);font-size:13px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  }
+
+  /* ---------- финальная надпись ---------- */
+  .footer-glow{
+    text-align:center;
+    font-size:clamp(1.7rem,5vw,2.6rem);
+    font-weight:800;
+    letter-spacing:0.05em;
+    color:#ffffff;
+    padding:4.5rem 0 2.5rem;
+    animation:fadeInGlow 1.6s ease-in-out both, glowPulse 4.5s ease-in-out 1.6s infinite;
+    text-shadow:
+      0 0 10px rgba(255,255,255,0.34),
+      0 0 22px rgba(100,200,255,0.24),
+      0 0 46px rgba(100,200,255,0.14);
+  }
+  @keyframes fadeInGlow{
+    0%{opacity:0;transform:translateY(14px);text-shadow:0 0 0 transparent}
+    100%{
+      opacity:1;transform:none;
+      text-shadow:0 0 10px rgba(255,255,255,0.34),0 0 22px rgba(100,200,255,0.24),0 0 46px rgba(100,200,255,0.14);
+    }
+  }
+  @keyframes glowPulse{
+    0%,100%{
+      text-shadow:0 0 10px rgba(255,255,255,0.30),0 0 22px rgba(100,200,255,0.20),0 0 46px rgba(100,200,255,0.12);
+    }
+    50%{
+      text-shadow:0 0 16px rgba(255,255,255,0.50),0 0 34px rgba(100,200,255,0.36),0 0 66px rgba(100,200,255,0.22);
+    }
+  }
+  @media (prefers-reduced-motion:reduce){
+    .footer-glow{animation:none}
+    .tab-content.active{animation:none}
+  }
+
+  /* ---------- responsive ---------- */
+  @media (max-width:900px){
+    .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .g3{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media (max-width:720px){
+    body{font-size:14.5px}
+    .wrap{padding:0 14px 64px}
+    header{padding:34px 0 18px}
+    .g2,.g3,.g4{grid-template-columns:1fr}
+    .chart-box{height:330px}
+    .chart-box.short{height:260px}
+    h2{font-size:22px;margin-top:40px}
+    .tabs{gap:5px;flex-wrap:nowrap}
+    .tab{flex:1 1 0;min-width:0;padding:10px 6px;font-size:12.5px;text-align:center}
+    .card,.chart-card{padding:18px 16px}
+    .score{font-size:46px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="eyebrow"><span class="dot"></span>ict_front · аудит и оценка миграции</span>
+  <h1><span class="n">Next.js</span><span class="vs">vs</span><span class="s">TanStack Start</span></h1>
+  <p class="lead">
+    Сравнение двух фреймворков и двух планов миграции ERP-системы <code>ict_front</code>.
+    Все цифры — из аудита реальной кодовой базы и постатейной оценки трудозатрат по этапам 0–9.
+  </p>
+  <div class="facts">
+    <div class="fact"><b>~42 800</b><span>строк TS/TSX</span></div>
+    <div class="fact"><b>132</b><span>файла маршрутов</span></div>
+    <div class="fact"><b>371</b><span>файл страниц</span></div>
+    <div class="fact"><b>118</b><span>файлов сервисного слоя</span></div>
+    <div class="fact"><b>11</b><span>бэкендов за прокси</span></div>
+    <div class="fact"><b style="color:var(--bad)">0</b><span>автотестов</span></div>
+  </div>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab active" data-tab="framework" role="tab">Сравнение фреймворков</button>
+  <button class="tab" data-tab="migration" role="tab">Сравнение планов миграции</button>
+</div>
+
+<!-- ============================= TAB 1 ============================= -->
+<div id="framework" class="tab-content active" role="tabpanel">
+
+  <h2>Итог в двух карточках</h2>
+  <p class="sub">Взвешенная оценка по семи критериям с весами от ×1 до ×3. Максимум — 10 баллов.</p>
+
+  <div class="grid g2 nx-first">
+    <div class="card verdict start">
+      <div style="display:flex;align-items:center">
+        <span class="name">TanStack Start</span>
+        <span class="badge neutral">Надстройка над текущим стеком</span>
+      </div>
+      <div class="score">7.7<small> / 10</small></div>
+      <p class="hint" style="margin:6px 0 0">Сервер добавляется к существующей архитектуре</p>
+      <ul>
+        <li><b>33–48</b> дней миграции</li>
+        <li>Меняется <b>2–5%</b> файлов кодовой базы</li>
+        <li>Роутер, Vite и Tailwind-плагин <b>остаются</b></li>
+        <li>Инкрементальный SSR: <code>false</code> → <code>data-only</code> → <code>true</code></li>
+      </ul>
+    </div>
+    <div class="card verdict next">
+      <div style="display:flex;align-items:center">
+        <span class="name">Next.js (App Router)</span>
+        <span class="badge neutral">Замена текущего стека</span>
+      </div>
+      <div class="score">6.4<small> / 10</small></div>
+      <p class="hint" style="margin:6px 0 0">Роутер, сборщик и модель рендера меняются целиком</p>
+      <ul>
+        <li><b>46–66</b> дней миграции</li>
+        <li>Правится <b>60–80%</b> файлов кодовой базы</li>
+        <li>Роутер, сборщик и CSS-плагин <b>заменяются</b></li>
+        <li>Промежуточного режима нет: SSR включён по умолчанию</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Краткое резюме</h2>
+  <div class="section-sep"></div>
+  <div class="grid g2 nx-first">
+    <div class="card">
+      <h3 style="color:var(--start)">TanStack Start — надстройка над текущим стеком</h3>
+      <p>
+        Start построен поверх того же <code>@tanstack/react-router</code>, который уже импортируют
+        <b>205 файлов</b> проекта. Роутинг, файлы маршрутов, хлебные крошки на <code>useMatches()</code>,
+        <code>Link</code>/<code>useNavigate</code>/<code>useParams</code> в 73 файлах — всё продолжает работать без правок.
+        Vite и Tailwind v4 через <code>@tailwindcss/vite</code> тоже остаются.
+      </p>
+      <p>
+        Отсюда объём работ на <b>28% меньше</b> (13–18 дней разницы) и меньшая доля затронутых
+        файлов на кодовой базе без единого автотеста. Внедрение инкрементально: приложение сначала едет
+        в режиме <code>defaultSsr: false</code>, где рантайм-поведение в браузере не меняется вообще,
+        а SSR включается маршрут за маршрутом с откатом в одну строку.
+      </p>
+      <p style="margin-bottom:0">
+        Обратная сторона — <b>отсутствие RSC</b> (весь код страниц едет в браузер), меньшая экосистема
+        и подвижный API внутри линейки 1.x.
+      </p>
+    </div>
+    <div class="card">
+      <h3 style="color:#4d9bff">Next.js — замена текущего стека</h3>
+      <p>
+        Next даёт то, чего у Start нет: React Server Components как рычаг сокращения бандла,
+        <code>next/image</code>, Server Actions, десятилетнюю экосистему, Active LTS до 2027 года
+        и обширную документацию. Защита маршрутов через <code>middleware.ts</code>
+        существует по построению, а не собирается вручную.
+      </p>
+      <p>
+        Объём работ при этом — <b>46–66 дней</b>. Полностью заменяется роутер (205 файлов),
+        переписываются все 132 файла маршрутов, теряется типобезопасность ссылок, нужен собственный
+        реестр хлебных крошек взамен <code>useMatches</code>, и на 371+ файле страниц расставляются
+        границы <code>"use client"</code>.
+      </p>
+      <p style="margin-bottom:0">
+        При нулевом тестовом покрытии это определяет <b>профиль риска</b>: правится 60–80% файлов,
+        а проверять результат нечем, кроме ручного чек-листа.
+      </p>
+    </div>
+  </div>
+
+  <h2>Что даёт каждый фреймворк</h2>
+  <p class="sub">
+    Ключевые технические возможности «из коробки» и их отношение к потребностям <code>ict_front</code>.
+  </p>
+  <div class="grid g2 nx-first">
+
+    <div class="card feat start">
+      <h3><span class="mark"></span>TanStack Start</h3>
+      <ul>
+        <li>
+          <strong>Сохранение существующего роутинга</strong>
+          Все 132 маршрута, <code>staticData.breadcrumb</code>, <code>useNavigate</code>,
+          <code>useParams</code>, <code>&lt;Link&gt;</code> продолжают работать без изменений.
+          Это главный источник экономии времени и снижения риска регрессий.
+        </li>
+        <li>
+          <strong>Vite как сборщик</strong>
+          Быстрая разработка (HMR), знакомый конфиг, отсутствие необходимости переучиваться
+          на Turbopack/Webpack.
+        </li>
+        <li>
+          <strong>Инкрементальный SSR</strong>
+          Возможность начать с SPA-режима на Node (<code>defaultSsr: false</code>), затем включать
+          SSR для отдельных маршрутов (<code>data-only</code> → <code>true</code>). Это позволяет
+          выкатывать изменения постепенно, минимизируя риски.
+        </li>
+        <li>
+          <strong>Серверные функции (<code>createServerFn</code>)</strong>
+          RPC-подход с полной типобезопасностью, валидацией через Zod (уже есть в проекте),
+          поддержкой middleware — как на клиенте, так и на сервере.
+        </li>
+        <li>
+          <strong>Единый слой данных с TanStack Query</strong>
+          Нативная интеграция с <code>setupRouterSsrQueryIntegration</code>, автоматическая гидратация
+          кэша, <code>loader</code>-ы с <code>ensureQueryData</code>. Нет необходимости вручную
+          оборачивать страницы в <code>HydrationBoundary</code>.
+        </li>
+        <li>
+          <strong>Типобезопасность на всех уровнях</strong>
+          От маршрутов до серверных функций — что существенно для ERP-системы с множеством
+          бизнес-сущностей.
+        </li>
+        <li>
+          <strong>Гибкость деплоя</strong>
+          Приложение разворачивается на любом Node-хостинге, без привязки к конкретному провайдеру.
+          Управление инфраструктурой полностью остаётся в руках команды.
+        </li>
+      </ul>
+    </div>
+
+    <div class="card feat next">
+      <h3><span class="mark"></span>Next.js (App Router)</h3>
+      <ul>
+        <li>
+          <strong>React Server Components (RSC)</strong>
+          Позволяет сократить клиентский бандл, перемещая тяжёлую логику рендеринга на сервер.
+          Даёт снижение размера JavaScript и улучшение TTI на сложных дашбордах.
+        </li>
+        <li>
+          <strong>Встроенные оптимизации</strong>
+          <code>next/image</code> для автоматической оптимизации изображений, <code>next/font</code>
+          для шрифтов, автоматический код-сплиттинг на уровне страниц.
+        </li>
+        <li>
+          <strong>Зрелая экосистема и сообщество</strong>
+          Огромное количество готовых решений, библиотек и примеров.
+          Любая проблема уже кем-то решена и документирована.
+        </li>
+        <li>
+          <strong>Стабильный и предсказуемый API</strong>
+          Фреймворк развивается 10+ лет, обратная совместимость на высоком уровне, критические
+          изменения выходят с длительным предупреждением.
+        </li>
+        <li>
+          <strong>Глубокая интеграция с Vercel</strong>
+          Если в будущем появится желание перейти на облачную платформу, Vercel предоставит
+          максимально удобный опыт: автоматические деплои, аналитика, Edge-функции.
+        </li>
+        <li>
+          <strong>Server Actions</strong>
+          Встроенный механизм для выполнения серверного кода из клиентских компонентов,
+          с автоматической защитой от CSRF и шифрованием данных.
+        </li>
+        <li>
+          <strong>ISR и PPR (Partial Prerendering)</strong>
+          Позволяют комбинировать статическую и динамическую генерацию — что может быть полезно
+          для публичных страниц, если они появятся.
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <h2>Сводная таблица оценок</h2>
+  <p class="sub">Балл × вес. Жирным выделен более высокий балл по критерию.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Критерий</th>
+          <th class="num-col">Вес</th>
+          <th class="num-col">Next.js</th>
+          <th class="num-col">Start</th>
+          <th>Пояснение</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Архитектурная совместимость</td>
+          <td class="num-col w">×2</td>
+          <td class="num-col"><span class="v n">4</span></td>
+          <td class="num-col"><span class="v s win">9</span></td>
+          <td class="hint">Start сохраняет роутинг — 205 файлов импортируют <code>@tanstack/react-router</code></td>
+        </tr>
+        <tr>
+          <td>Безопасность и серверные операции</td>
+          <td class="num-col w">×3</td>
+          <td class="num-col"><span class="v n">8</span></td>
+          <td class="num-col"><span class="v s">8</span></td>
+          <td class="hint">Паритет: Next зрелее, Start строже типизирует границу клиент/сервер</td>
+        </tr>
+        <tr>
+          <td>Гибкость деплоя (свой сервер)</td>
+          <td class="num-col w">×2</td>
+          <td class="num-col"><span class="v n">7</span></td>
+          <td class="num-col"><span class="v s win">8</span></td>
+          <td class="hint">Оба без вендор-лока; у Next длиннее чек-лист self-hosting (standalone, static, public)</td>
+        </tr>
+        <tr>
+          <td>Производительность</td>
+          <td class="num-col w">×2</td>
+          <td class="num-col"><span class="v n win">8</span></td>
+          <td class="num-col"><span class="v s">7</span></td>
+          <td class="hint">У Next больше механизмов (ISR, PPR), но для внутреннего ERP без CDN они не задействуются</td>
+        </tr>
+        <tr>
+          <td>DX (Developer Experience)</td>
+          <td class="num-col w">×1</td>
+          <td class="num-col"><span class="v n">7</span></td>
+          <td class="num-col"><span class="v s win">8</span></td>
+          <td class="hint">Start сохраняет Vite-HMR и знакомую команде модель разработки</td>
+        </tr>
+        <tr>
+          <td>Долгосрочная перспектива</td>
+          <td class="num-col w">×2</td>
+          <td class="num-col"><span class="v n win">9</span></td>
+          <td class="num-col"><span class="v s">6</span></td>
+          <td class="hint">Next: 10 лет, Active LTS до 2027, RSC/PPR. Start: v1.0 в марте 2026, RSC ещё нет</td>
+        </tr>
+        <tr>
+          <td>Сложность миграции</td>
+          <td class="num-col w">×3</td>
+          <td class="num-col"><span class="v n">3</span></td>
+          <td class="num-col"><span class="v s win">9</span></td>
+          <td class="hint">46–66 дн. против 33–48; правится 60–80% файлов против 2–5%</td>
+        </tr>
+        <tr class="total">
+          <td>Итоговый взвешенный балл</td>
+          <td class="num-col w">—</td>
+          <td class="num-col" style="color:#69adff">6.4</td>
+          <td class="num-col" style="color:#fb923c">7.7</td>
+          <td class="hint" style="font-weight:600">TanStack Start — 7.7, Next.js — 6.4 при указанных весах</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Баллы по критериям</h2>
+  <div class="chart-card">
+    <div class="chart-head">
+      <h3>Оценка 0–10 по каждому критерию</h3>
+      <span class="note">Вес критерия указан в подписи оси</span>
+    </div>
+    <div class="chart-box"><canvas id="chartScores"></canvas></div>
+  </div>
+
+  <h2>Технические модели: чем отличается устройство</h2>
+  <p class="sub">
+    Три места, где фреймворки расходятся не количественно, а концептуально. Веса в таблице выше
+    отражают приоритеты именно этого проекта — при других приоритетах итоговые баллы изменятся.
+  </p>
+
+  <div class="pair-title">Подход к SSR</div>
+  <div class="pair">
+    <div>
+      <h4 class="n4">Next.js</h4>
+      <p>
+        Server Components по умолчанию: каждый компонент считается серверным, пока не помечен явно.
+        Клиентские компоненты выделяются директивой <code>"use client"</code>, и границу нужно
+        провести осознанно по всему дереву — для <code>ict_front</code> это 371+ файл страниц.
+      </p>
+      <p>
+        Модель мощная, но переключателя «сделать всё как раньше» в ней нет: приложение сразу живёт
+        в серверной парадигме.
+      </p>
+    </div>
+    <div>
+      <h4 class="s4">TanStack Start</h4>
+      <p>
+        Интерактивные компоненты по умолчанию, SSR включается опционально — на уровне маршрута
+        и в трёх состояниях: <code>false</code>, <code>data-only</code> (на сервере выполняется только
+        загрузка данных) и <code>true</code> (полный серверный рендер разметки).
+      </p>
+      <p>
+        Это даёт больше контроля и постепенности: можно приехать на сервер, ничего не меняя
+        в поведении браузера, и включать SSR маршрут за маршрутом.
+      </p>
+    </div>
+  </div>
+
+  <div class="pair-title">Модель кеширования</div>
+  <div class="pair">
+    <div>
+      <h4 class="n4">Next.js</h4>
+      <p>
+        Многоуровневый кеш: потоки RSC, кеш <code>fetch</code>, кеш роутера на клиенте, плюс
+        полностраничный кеш. Уровни взаимодействуют между собой, а инвалидация выполняется
+        через <code>revalidatePath</code>/<code>revalidateTag</code>.
+      </p>
+      <p>
+        Сильная сторона — при верной настройке кеш работает без участия прикладного кода.
+        Слабая — модель требовательна к настройке, и в мультиинстансном self-hosted-деплое
+        нужен собственный <code>cacheHandler</code>.
+      </p>
+    </div>
+    <div>
+      <h4 class="s4">TanStack Start</h4>
+      <p>
+        Явный SWR-подход: кеш живёт в роутере (<code>loader</code>) и в TanStack Query.
+        Никакого скрытого слоя между ними нет — что закешировано, видно из кода.
+      </p>
+      <p>
+        <code>staleTime</code> и <code>gcTime</code> уже знакомы команде: React Query используется
+        в проекте сегодня — 121 <code>useQuery</code> и 113 <code>useMutation</code>.
+        Переучиваться на новую модель кеширования не требуется.
+      </p>
+    </div>
+  </div>
+
+  <div class="pair-title">Серверные операции</div>
+  <div class="pair">
+    <div>
+      <h4 class="n4">Server Actions (Next.js)</h4>
+      <p>
+        Интеграция с формами из коробки: функция передаётся в <code>&lt;form action&gt;</code>
+        и работает даже до гидратации. Есть автоматическая защита от CSRF и шифрование замыканий,
+        передаваемых с сервера на клиент.
+      </p>
+      <p>
+        Технически каждое действие — публичный POST-эндпоинт, поэтому авторизацию и валидацию входа
+        нужно писать внутри самого действия: вызвать его может кто угодно.
+      </p>
+    </div>
+    <div>
+      <h4 class="s4">Server Functions (TanStack Start)</h4>
+      <p>
+        RPC-стиль: <code>createServerFn</code> с явным методом (GET или POST), валидатором входа
+        (<code>inputValidator</code> + Zod, уже используется в 18 файлах проекта) и цепочкой
+        middleware — общей для клиента и сервера.
+      </p>
+      <p>
+        Типы входа и выхода выводятся сквозь всю цепочку, поэтому граница клиент/сервер проверяется
+        компилятором. Готовой интеграции с формами уровня Server Actions при этом нет.
+      </p>
+    </div>
+  </div>
+
+  <h2>Плюсы и минусы</h2>
+  <div class="section-sep"></div>
+  <div class="grid g2 nx-first">
+    <div class="card pc start">
+      <h3><span class="mark"></span>TanStack Start</h3>
+      <div class="divider">Плюсы</div>
+      <ul>
+        <li class="p"><span class="ic">+</span><span>Роутинг не меняется — экономия <b>5–7 дней</b> только на этапе 2</span></li>
+        <li class="p"><span class="ic">+</span><span>Vite остаётся: та же сборка, тот же HMR, тот же <code>vite.config.ts</code></span></li>
+        <li class="p"><span class="ic">+</span><span>Инкрементальное внедрение SSR: <code>defaultSsr: false</code> → <code>data-only</code> → <code>true</code></span></li>
+        <li class="p"><span class="ic">+</span><span>Тотальная типобезопасность: <code>createServerFn</code> с Zod-валидацией входа</span></li>
+        <li class="p"><span class="ic">+</span><span>Меньше риск регрессии — меняется <b>2–5%</b> файлов</span></li>
+        <li class="p"><span class="ic">+</span><span>Типобезопасность ссылок не теряется (в Next её возвращают через <code>typedRoutes</code>)</span></li>
+      </ul>
+      <div class="divider">Минусы</div>
+      <ul>
+        <li class="m"><span class="ic">−</span><span>Нет RSC — весь код страниц едет в браузер, бандл режется только вручную</span></li>
+        <li class="m"><span class="ic">−</span><span>Нет <code>next/image</code> — оптимизация картинок ложится на nginx</span></li>
+        <li class="m"><span class="ic">−</span><span>Меньше готовых решений: нетипичная проблема решается чтением исходников</span></li>
+        <li class="m"><span class="ic">−</span><span>Подвижный API: переименования внутри 1.x (<code>.validator()</code> → <code>.inputValidator()</code>)</span></li>
+      </ul>
+    </div>
+
+    <div class="card pc next">
+      <h3><span class="mark"></span>Next.js (App Router)</h3>
+      <div class="divider">Плюсы</div>
+      <ul>
+        <li class="p"><span class="ic">+</span><span>Зрелая экосистема: 10+ лет, Active LTS до 2027 года</span></li>
+        <li class="p"><span class="ic">+</span><span>RSC из коробки — главный рычаг сокращения клиентского бандла</span></li>
+        <li class="p"><span class="ic">+</span><span><code>next/image</code> и встроенная оптимизация ассетов</span></li>
+        <li class="p"><span class="ic">+</span><span>Защита маршрутов через <code>middleware.ts</code> — по построению, а не вручную</span></li>
+        <li class="p"><span class="ic">+</span><span>Большой объём документации, рецептов и готовых интеграций</span></li>
+      </ul>
+      <div class="divider">Минусы</div>
+      <ul>
+        <li class="m"><span class="ic">−</span><span>Больший объём миграции: <b>46–66 дн.</b>, 11–14 недель на одного разработчика</span></li>
+        <li class="m"><span class="ic">−</span><span>Self-hosting сложнее: standalone, копирование <code>public</code>/<code>static</code>, длинный чек-лист деплоя</span></li>
+        <li class="m"><span class="ic">−</span><span>Больше бандл фреймворка, смена сборщика Vite → Turbopack/webpack</span></li>
+        <li class="m"><span class="ic">−</span><span><code>"use client"</code> расставляется на ~371 файле страниц</span></li>
+        <li class="m"><span class="ic">−</span><span>Нет аналога <code>useMatches</code> — реестр хлебных крошек пишется с нуля</span></li>
+        <li class="m"><span class="ic">−</span><span>Нулевое тестовое покрытие × 60–80% изменённых файлов = высокий риск регрессии</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Риски и ограничения</h2>
+  <p class="sub">
+    Что может пойти не так в каждом из вариантов — включая риск повторного рефакторинга
+    и технические ограничения, проявляющиеся уже после выкатки.
+  </p>
+  <div class="grid g2 nx-first">
+
+    <div class="card feat start">
+      <h3><span class="mark"></span>При выборе TanStack Start</h3>
+      <ul>
+        <li>
+          <strong>Молодость фреймворка</strong>
+          Первый стабильный релиз (v1.0) вышел в марте 2026 года. Некоторые крайние случаи
+          использования ещё не проверены в бою, а API внутри линейки 1.x может меняться — уже были
+          переименования <code>@tanstack/start</code> → <code>@tanstack/react-start</code>
+          и <code>.validator()</code> → <code>.inputValidator()</code>. Риск нарваться на баг,
+          который ещё не исправлен, выше, чем у Next.js.
+        </li>
+        <li>
+          <strong>Отсутствие RSC в production</strong>
+          На данный момент поддержка React Server Components экспериментальная. Если в будущем
+          потребуется массовое использование RSC для сокращения бандла, Start может не успеть
+          за потребностями.
+        </li>
+        <li>
+          <strong>Меньшее сообщество и меньше готовых решений</strong>
+          При возникновении нестандартной задачи — например, интеграции с корпоративной системой
+          логирования или сложного self-hosted-деплоя — придётся разбираться самостоятельно,
+          опираясь на исходники и ограниченную документацию.
+        </li>
+        <li>
+          <strong>Риск «застрять» на версии</strong>
+          Если команда не будет активно следить за обновлениями, можно остаться на версии
+          с критическим багом. Лечится фиксацией точной версии (<code>--save-exact</code>)
+          и регулярным аудитом changelog.
+        </li>
+        <li>
+          <strong>Производственные ошибки</strong>
+          Как любой молодой фреймворк, Start может содержать ошибки, которые в Next.js уже исправлены
+          за счёт многолетней эксплуатации. Примеры из issue-трекера: проблемы с деплоем
+          на Cloudflare Workers (падение production-сборки), ошибки с получением токена
+          аутентификации на сервере, неочевидное поведение middleware.
+        </li>
+      </ul>
+    </div>
+
+    <div class="card feat next">
+      <h3><span class="mark"></span>При выборе Next.js</h3>
+      <ul>
+        <li>
+          <strong>Колоссальный объём миграции</strong>
+          Требуется переписать 132 маршрута, 205 файлов, использующих TanStack Router, и адаптировать
+          371 файл страниц под модель Server Components — расстановка <code>"use client"</code>.
+          При нулевом тестовом покрытии это создаёт значительный риск функциональных регрессий.
+        </li>
+        <li>
+          <strong>Сложность self-hosting</strong>
+          Next.js официально поддерживает деплой на собственные сервера, но это требует настройки
+          дополнительных компонентов: <code>cacheHandler</code> для мультиинстансности,
+          <code>NEXT_SERVER_ACTIONS_ENCRYPTION_KEY</code>, <code>deploymentId</code>, явного
+          отключения буферизации nginx для стриминга. Каждый из этих шагов может стать источником
+          ошибок в проде.
+        </li>
+        <li>
+          <strong>«Двойная» модель данных</strong>
+          При одновременном использовании RSC и React Query возникают два конкурирующих слоя данных:
+          <code>fetch</code> в RSC и <code>useQuery</code> на клиенте. Для команды без опыта SSR
+          это частая причина ошибок гидратации и неконсистентности данных.
+        </li>
+        <li>
+          <strong>Потеря существующей типобезопасности</strong>
+          TanStack Router даёт полную типизацию маршрутов, search-параметров и ссылок.
+          В Next.js <code>typedRoutes</code> восстанавливает часть этой безопасности, но она менее
+          глубокая и требует дополнительных усилий.
+        </li>
+        <li>
+          <strong>Риск «переписать и не закончить»</strong>
+          Из-за большого объёма и отсутствия автотестов миграция может затянуться на многие месяцы,
+          и проект рискует остаться в гибридном состоянии: часть страниц на старом стеке,
+          часть на новом. Это увеличивает сложность разработки и поддержки.
+        </li>
+      </ul>
+    </div>
+
+  </div>
+
+  <h2>Что говорит практика</h2>
+  <p class="sub">Не предположения, а результаты поиска по репозиторию.</p>
+  <div class="grid g4">
+    <div class="tile"><div class="num o">205</div><div class="lbl">файлов импортируют <code>@tanstack/react-router</code></div></div>
+    <div class="tile"><div class="num b">0</div><div class="lbl">файлов используют Next.js-специфичные паттерны</div></div>
+    <div class="tile"><div class="num">371</div><div class="lbl">файл страниц интерактивен — останется клиентским и на Next</div></div>
+    <div class="tile"><div class="num g">3–5</div><div class="lbl">дней закрывают утечку <code>api_key</code> — без всякого SSR</div></div>
+  </div>
+  <div class="callout">
+    <span class="t">Как это читается</span>
+    <p style="margin-bottom:0">
+      Start добавляет сервер к тому, что уже есть; Next заменяет то, что уже есть. При нулевом
+      тестовом покрытии это и есть основное различие в характере работ — оно определяет и объём,
+      и профиль рисков, но не отвечает за долгосрочные потребности проекта, где перевес у Next.
+    </p>
+  </div>
+
+  <h2>Сценарий повторного рефакторинга через 6–12 месяцев</h2>
+  <p class="sub">
+    Факторы, которые могут потребовать пересмотра архитектурного решения — вне зависимости
+    от того, какой фреймворк выбран сейчас.
+  </p>
+  <div class="grid g2">
+
+    <div class="card">
+      <h3>Изменение бизнес-требований</h3>
+      <p style="margin-bottom:0">
+        Если продукт выйдет за пределы внутренней ERP-системы и появится потребность
+        в SEO-оптимизированных публичных страницах, потребуется более глубокая интеграция с SSR
+        и статической генерацией. Это может стать аргументом в пользу Next.js, который имеет
+        зрелые инструменты для таких сценариев.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Эволюция экосистемы</h3>
+      <p style="margin-bottom:0">
+        Если TanStack Start не успеет за развитием React — например, если RSC станет доминирующей
+        парадигмой и потребуется глубокая поддержка — команда может столкнуться с необходимостью
+        миграции на фреймворк с более зрелой RSC-реализацией. В то же время, если Next.js продолжит
+        усложняться (новые версии App Router с кардинальными изменениями), поддержка существующего
+        кода может потребовать больше усилий, чем ожидалось.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Рост команды или изменение её состава</h3>
+      <p style="margin-bottom:0">
+        Если в проект придут разработчики с опытом работы с одним из фреймворков, это может
+        повлиять на выбор в пользу более знакомого стека. Однако при грамотном документировании
+        и наличии чётких архитектурных принципов этот фактор менее критичен.
+      </p>
+    </div>
+
+    <div class="card">
+      <h3>Технические ограничения</h3>
+      <p style="margin-bottom:0">
+        Если выяснится, что выбранный фреймворк не справляется с нагрузкой — например, время ответа
+        SSR превышает допустимые значения, — может потребоваться пересмотр подхода. Это может быть
+        как проблема конкретной реализации, так и архитектурное ограничение фреймворка.
+      </p>
+    </div>
+
+  </div>
+
+  <div class="callout">
+    <span class="t">Главный вывод</span>
+    <p style="margin-bottom:0">
+      Любой выбор несёт риск, что через полгода потребуется корректировка. Однако при условии,
+      что оба плана миграции предполагают поэтапное внедрение и наличие плана отката, команда
+      сможет адаптироваться к изменениям с минимальными потерями. Ключевой фактор — не столько
+      сам фреймворк, сколько качество документации, модульность кода и наличие системы
+      автоматического тестирования, которую предстоит создать.
+    </p>
+  </div>
+
+</div><!-- /tab framework -->
+
+<!-- ============================= TAB 2 ============================= -->
+<div id="migration" class="tab-content" role="tabpanel">
+
+  <h2 class="blue">Планы миграции: Next.js vs TanStack Start</h2>
+  <p class="sub">
+    Оба плана состоят из одних и тех же десяти этапов и решают одну и ту же задачу:
+    вынести JWT из <code>localStorage</code>, убрать <code>api_key</code> из браузера
+    и сделать защиту маршрутов серверной. Различаются объём работ, характер изменений
+    и профиль рисков.
+  </p>
+
+  <div class="grid g4">
+    <div class="tile"><div class="num b">46–66</div><div class="lbl">дней — Next, этапы 0–9</div></div>
+    <div class="tile"><div class="num o">33–48</div><div class="lbl">дней — Start, этапы 0–9</div></div>
+    <div class="tile"><div class="num">−28%</div><div class="lbl">разница в объёме = 13–18 дней</div></div>
+    <div class="tile"><div class="num">27–39</div><div class="lbl">сокращённый объём Start (без этапов 6–7)</div></div>
+  </div>
+
+  <h2 class="blue">Трудозатраты по этапам</h2>
+  <p class="sub">Оценка в днях. Колонка Δ — разница «Start минус Next»; зелёным отмечен меньший объём работ у Start.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="num-col" style="width:52px">Этап</th>
+          <th>Название</th>
+          <th class="num-col">Next</th>
+          <th class="num-col">Start</th>
+          <th class="num-col">Δ</th>
+          <th>Ключевое различие</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="num-col w">0</td><td>Подготовка кодовой базы</td><td class="num-col"><span class="v n">3–5</span></td><td class="num-col"><span class="v s">2–3</span></td><td class="num-col delta">−1 / −2</td><td class="hint">Чистка 11–12 мёртвых пакетов — общая часть. У Next сверху кодмод навигации и извлечение <code>staticData</code> для будущих крошек</td></tr>
+        <tr><td class="num-col w">1</td><td>Инфраструктура</td><td class="num-col"><span class="v n">4–6</span></td><td class="num-col"><span class="v s">3–5</span></td><td class="num-col delta">−1 / −1</td><td class="hint">Start: новые точки входа при сохранении Vite + спайк сверки API. Next: новый сборщик и Tailwind через PostCSS вместо плагина Vite</td></tr>
+        <tr><td class="num-col w">2</td><td>Миграция роутинга</td><td class="num-col"><span class="v n">6–9</span></td><td class="num-col"><span class="v s win">1–2</span></td><td class="num-col delta" style="font-size:15px">−5 / −7</td><td class="hint"><b>Главное расхождение.</b> Start: роутер не меняется, правятся только провайдеры в <code>__root</code>. Next: 132 файла переписываются в дерево <code>app/</code>, крошки строятся заново</td></tr>
+        <tr><td class="num-col w">3</td><td>Сервисный слой и React Query</td><td class="num-col"><span class="v n">4–6</span></td><td class="num-col"><span class="v s">3–5</span></td><td class="num-col delta">−1 / −1</td><td class="hint">Разделение 41 HTTP-клиента на client/server — общее. Start: <code>setupRouterSsrQueryIntegration</code>. Next: ручные <code>HydrationBoundary</code> на страницах</td></tr>
+        <tr><td class="num-col w">4</td><td>Авторизация и безопасность</td><td class="num-col"><span class="v n">6–8</span></td><td class="num-col"><span class="v s">6–8</span></td><td class="num-col delta zero">0</td><td class="hint">Объём совпадает, механизмы разные: Next — <code>middleware.ts</code>, Start — серверные функции + <code>beforeLoad</code>, требующий проверки на сервере</td></tr>
+        <tr><td class="num-col w">5</td><td>Адаптация UI</td><td class="num-col"><span class="v n">5–7</span></td><td class="num-col"><span class="v s win">3–4</span></td><td class="num-col delta">−2 / −3</td><td class="hint">У обоих — 15 браузерных точек вне обработчиков. У Next дополнительно расстановка <code>"use client"</code> по дереву из 371 файла страниц</td></tr>
+        <tr><td class="num-col w">6</td><td>SSR</td><td class="num-col"><span class="v n">5–8</span></td><td class="num-col"><span class="v s">4–6</span></td><td class="num-col delta">−1 / −2</td><td class="hint">Start: включение по маршруту с промежуточным режимом <code>data-only</code>. Next: конвертация страниц в Server Components, промежуточного состояния нет</td></tr>
+        <tr><td class="num-col w">7</td><td>Оптимизация</td><td class="num-col"><span class="v n">3–4</span></td><td class="num-col"><span class="v s">2–3</span></td><td class="num-col delta">−1 / −1</td><td class="hint">Start: только ручной код-сплиттинг — RSC нет. Next: RSC плюс анализатор бандла, работы больше, но и потолок выигрыша выше</td></tr>
+        <tr><td class="num-col w">8</td><td>Тестирование и стабилизация</td><td class="num-col"><span class="v n">8–10</span></td><td class="num-col"><span class="v s">7–9</span></td><td class="num-col delta">−1 / −1</td><td class="hint">Ручной чек-лист в обоих планах: 272 сценария у Start, 200+ у Next. Зона проверки у Next шире — переписан роутинг</td></tr>
+        <tr><td class="num-col w">9</td><td>Переключение прода</td><td class="num-col"><span class="v n">2–3</span></td><td class="num-col"><span class="v s">2–3</span></td><td class="num-col delta zero">0</td><td class="hint">Идентично: подключаемый файл nginx, параллельная эксплуатация, мгновенный откат на Vite-сборку</td></tr>
+        <tr class="total"><td class="num-col w">—</td><td>ИТОГО</td><td class="num-col" style="color:#69adff">46–66</td><td class="num-col" style="color:#fb923c">33–48</td><td class="num-col delta" style="font-size:15px">−13 / −18</td><td class="hint" style="font-weight:400">Разница ≈ 28% полного объёма</td></tr>
+        <tr><td class="num-col w">—</td><td class="hint">Без этапов 6–7 (сокращённый объём)</td><td class="num-col"><span class="v n">38–54</span></td><td class="num-col"><span class="v s">27–39</span></td><td class="num-col delta">−11 / −15</td><td class="hint">После этапа 4 цель миграции достигнута в обоих планах; этапы 6–7 отложимы</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout">
+    <span class="t">Разница в объёме — примерно 28%, и она не размазана равномерно</span>
+    <p style="margin-bottom:0">
+      Более трети разницы даёт этап 2 (роутинг), который в Start почти отсутствует, остальное —
+      этапы 0 и 5, где не нужны кодмод навигации, реестр хлебных крошек и расстановка
+      <code>"use client"</code>. Этапы 4 и 9 идентичны: вынос секретов и процедура переключения
+      прода от фреймворка не зависят.
+    </p>
+  </div>
+
+  <h2 class="blue">График трудозатрат</h2>
+  <div class="chart-card">
+    <div class="chart-head">
+      <h3>Дней по этапам</h3>
+      <span class="note">Столбец — середина оценки, точный диапазон — в подсказке при наведении</span>
+    </div>
+    <div class="chart-box"><canvas id="chartEffort"></canvas></div>
+  </div>
+
+  <h2 class="blue">Где сосредоточена работа</h2>
+  <p class="sub">
+    Тот же объём в долях от общего: показывает, на что уходит основная часть каждого плана,
+    независимо от его суммарной длительности.
+  </p>
+  <div class="chart-card">
+    <div class="chart-head">
+      <h3>Доля этапа в общем объёме, %</h3>
+      <span class="note">За 100% принят полный объём соответствующего плана</span>
+    </div>
+    <div class="chart-box"><canvas id="chartShare"></canvas></div>
+  </div>
+  <p class="hint" style="margin-top:12px">
+    В долях картина отличается от абсолютной. У Start 37,1% объёма приходится на этапы 4 и 8 —
+    безопасность и тестирование; у Next те же два этапа дают 28,6%, потому что общий объём больше
+    и распределён шире. Наибольшее расхождение по доле — этап 2: 13,4% у Next против 3,7% у Start.
+    Этапы 6 и 7 (SSR и оптимизация) занимают у Start 18,5%, у Next — 17,9%.
+  </p>
+
+  <h2 class="blue">Календарные сроки</h2>
+  <p class="sub">
+    При команде из 1–2 разработчиков — с учётом нулевого тестового покрытия и необходимости
+    ручного регресса:
+  </p>
+  <div class="chart-card">
+    <div class="chart-head">
+      <h3>Недель до переключения прода</h3>
+      <span class="note">Полоса — диапазон «от–до»</span>
+    </div>
+    <div class="chart-box short"><canvas id="chartWeeks"></canvas></div>
+  </div>
+  <p class="hint" style="margin-top:12px">
+    Эти оценки включают все этапы от подготовки до переключения прода и предполагают, что
+    разработчики знакомы с текущим стеком (TanStack Router, React Query, Vite) и имеют базовый
+    опыт работы с SSR — для Next дополнительно заложено время на освоение RSC и App Router.
+    Диапазоны соответствуют консервативной границе из планов миграции; при полной параллельной
+    работе двух разработчиков планы дают 7–10 недель для Next и 5–7 для Start.
+  </p>
+
+  <h2 class="blue">Сравнение рисков</h2>
+  <p class="sub">Профили рисков различаются, а не «один лучше по всем пунктам».</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Риск</th><th>Next.js</th><th>TanStack Start</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Утечка кэша React Query между пользователями</td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">Фабрика через <code>cache()</code> + <code>no-store</code></span></td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">Фабрика <code>QueryClient</code> при создании роутера</span></td>
+        </tr>
+        <tr>
+          <td>Ошибка в защите маршрутов</td>
+          <td><span class="lvl low">Низкий</span><span class="risk-note"><code>middleware.ts</code> защищает по построению</span></td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note"><code>beforeLoad</code> при выключенном SSR не защищает — нужна двойная проверка</span></td>
+        </tr>
+        <tr>
+          <td>Подвижный API фреймворка</td>
+          <td><span class="lvl low">Низкий</span><span class="risk-note">Стабильный API, Active LTS</span></td>
+          <td><span class="lvl high">Высокий</span><span class="risk-note">Переименования внутри 1.x; митигация — спайк и <code>--save-exact</code></span></td>
+        </tr>
+        <tr>
+          <td>Функциональная регрессия (0 автотестов)</td>
+          <td><span class="lvl high">Высокий</span><span class="risk-note">Правится 60–80% файлов, проверять нечем кроме ручного чек-листа</span></td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">Меняется 2–5% файлов; <code>routes/</code> и <code>pages/</code> не переписываются</span></td>
+        </tr>
+        <tr>
+          <td>Рост клиентского бандла</td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">RSC помогает, но неверные границы <code>"use client"</code> съедают выигрыш</span></td>
+          <td><span class="lvl high">Высокий</span><span class="risk-note">RSC нет — только ручной код-сплиттинг на этапе 7</span></td>
+        </tr>
+        <tr>
+          <td>Ошибки гидратации</td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">21 файл recharts + xyflow требуют <code>dynamic(ssr:false)</code></span></td>
+          <td><span class="lvl low">Низкий</span><span class="risk-note">Промежуточный режим <code>data-only</code>, откат маршрута одной строкой</span></td>
+        </tr>
+        <tr>
+          <td>Отсутствие готовых решений для self-hosting</td>
+          <td><span class="lvl low">Низкий</span><span class="risk-note">Зрелая экосистема, standalone-режим документирован</span></td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">Мало рецептов; запасной вариант — Docker <code>node:24-alpine</code></span></td>
+        </tr>
+        <tr>
+          <td>Работы остановлены на этапе 5–6</td>
+          <td><span class="lvl mid">Средний</span><span class="risk-note">То же, но остаток объёма больше</span></td>
+          <td><span class="lvl low">Низкий</span><span class="risk-note">После этапа 4 система пригодна к эксплуатации</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="blue">Подходы к тестированию</h2>
+  <p class="sub">
+    Здесь планы совпадают почти полностью — и это самая уязвимая часть обоих.
+  </p>
+  <div class="pair">
+    <div>
+      <h4 class="n4">Next.js — план тестирования</h4>
+      <p>
+        Ручной чек-лист на 200+ сценариев, разбитый на 13 блоков по доменным модулям.
+        Эталонные скриншоты и печатные формы снимаются на этапе 0, до начала изменений,
+        и сравниваются после. Сверху — опциональный Playwright-смоук на критические пути.
+      </p>
+      <p>
+        Зона проверки шире: переписан роутинг, поэтому в объём регресса попадают все 132 маршрута
+        плюс поведение хлебных крошек и типизация ссылок.
+      </p>
+    </div>
+    <div>
+      <h4 class="s4">TanStack Start — план тестирования</h4>
+      <p>
+        Тот же подход: ручной чек-лист на 272 сценария по тем же 13 блокам, эталонные артефакты
+        этапа 0, параллельная эксплуатация две недели, опциональный Playwright-смоук.
+      </p>
+      <p>
+        Отдельные сценарии (<code>SEC-06</code>, <code>SEC-15</code>) проверяют отказ в доступе
+        через <code>curl</code>, а не через поведение интерфейса: при выключенном SSR
+        <code>beforeLoad</code> выполняется в браузере и серверной защитой не является.
+      </p>
+    </div>
+  </div>
+  <div class="callout">
+    <span class="t">Общее ограничение обоих планов</span>
+    <p style="margin-bottom:0">
+      В проекте <b>0 автотестов</b> при настроенном Vitest. Ни один из планов это не меняет:
+      оба опираются на ручной прогон и опциональный смоук. Это означает, что качество приёмки
+      целиком зависит от дисциплины прохождения чек-листа. Последствия пропущенной ошибки
+      одинаковы в обоих вариантах — различается только объём затронутого кода, то есть
+      вероятность, что ошибка вообще возникнет.
+    </p>
+  </div>
+
+  <h2 class="blue">Стратегии отката</h2>
+  <p class="sub">
+    Что можно откатить, на каком уровне и за какое время — если после выкатки что-то пойдёт не так.
+  </p>
+  <div class="pair">
+    <div>
+      <h4 class="n4">Next.js</h4>
+      <p>
+        <b>Уровень 1 — полный откат на статику.</b> Vite-сборка остаётся на сервере и продолжает
+        собираться в CI минимум 4 недели после переключения. Переключение — один подключаемый файл
+        nginx, менее двух минут.
+      </p>
+      <p>
+        <b>Частичный откат</b> возможен только через маршрутизацию в nginx: часть путей уходит
+        на Next, часть — на старую сборку. Это работает, но требует ручного ведения списка путей
+        и разъезжается с сессиями.
+      </p>
+      <p>
+        Отката «внутри фреймворка» нет: чтобы вернуть страницу к клиентскому рендеру, её нужно
+        конвертировать обратно из Server Component в Client Component.
+      </p>
+    </div>
+    <div>
+      <h4 class="s4">TanStack Start</h4>
+      <p>
+        <b>Уровень 1 — точечный отказ от SSR.</b> Проблемный маршрут возвращается к клиентскому
+        рендеру одной строкой: <code>ssr: false</code> в его определении. Остальное приложение
+        не затрагивается.
+      </p>
+      <p>
+        <b>Уровень 2 — глобальный откат SSR.</b> <code>defaultSsr: false</code> возвращает всё
+        приложение в SPA-режим на Node. Серверные функции, httpOnly-сессия и прокси секретов
+        при этом продолжают работать — цель миграции не теряется.
+      </p>
+      <p>
+        <b>Уровень 3 — полный откат на статику.</b> Тот же механизм, что у Next: подключаемый файл
+        nginx и сохранённая Vite-сборка.
+      </p>
+    </div>
+  </div>
+
+  <h2 class="blue">Сводное сравнение по аспектам</h2>
+  <p class="sub">Фактические значения без оценки «лучше/хуже» — приоритет аспектов задаёт команда.</p>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Аспект</th><th>Next.js</th><th>TanStack Start</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Объём миграции</td><td>46–66 дней</td><td>33–48 дней</td></tr>
+        <tr><td>Календарный срок</td><td>11–14 недель</td><td>7–10 недель</td></tr>
+        <tr><td>Доля затронутых файлов</td><td>60–80%</td><td>2–5%</td></tr>
+        <tr><td>Инкрементальность внедрения</td><td>Промежуточного режима нет</td><td><code>defaultSsr:false</code> → <code>data-only</code> → <code>true</code></td></tr>
+        <tr><td>Откат отдельного маршрута</td><td>Обратная конвертация Server → Client Component</td><td>Одна строка: <code>ssr: false</code></td></tr>
+        <tr><td>Сборщик и роутер</td><td>Заменяются оба</td><td>Vite и TanStack Router остаются</td></tr>
+        <tr><td>RSC и сокращение бандла</td><td>Доступно из коробки</td><td>Экспериментально, в production не используется</td></tr>
+        <tr><td>Оптимизация изображений</td><td><code>next/image</code></td><td>Средствами nginx или отдельного сервиса</td></tr>
+        <tr><td>Защита маршрутов</td><td><code>middleware.ts</code> по построению</td><td>Серверные функции + проверка на сервере</td></tr>
+        <tr><td>Стабильность API фреймворка</td><td>Стабильный, Active LTS до 2027</td><td>Подвижный внутри линейки 1.x</td></tr>
+        <tr><td>Возраст и сообщество</td><td>10+ лет, широкая экосистема</td><td>v1.0 — март 2026</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout" style="margin-top:26px">
+    <span class="t">Как пользоваться этим сравнением</span>
+    <p>
+      Оба плана достигают заявленной цели — httpOnly-сессия, секреты на сервере, серверная защита
+      маршрутов — и в обоих она достигается к концу этапа 4. Дальше расхождение определяется
+      не самой целью, а тем, что важнее в конкретный момент.
+    </p>
+    <p style="margin-bottom:0">
+      Взвешенная оценка даёт <b>7.7 у TanStack Start</b> и <b>6.4 у Next.js</b>, но она построена
+      на весах, отражающих приоритеты этого проекта сегодня: тройной вес у сложности миграции
+      и безопасности, двойной — у долгосрочной перспективы. Если поднять вес долгосрочной
+      перспективы и производительности, соотношение меняется в пользу Next.js.
+      Выбор зависит от приоритетов команды и бизнес-требований.
+    </p>
+  </div>
+
+</div><!-- /tab migration -->
+
+<footer>
+  <span>Источники: <code>nextjsmigrationplan.md</code> · <code>tanstackstartmigrationplan.md</code> · аудит кодовой базы <code>ict_front</code></span>
+  <span>Дата документа: 09.09.2026</span>
+</footer>
+
+<div class="footer-glow">Спасибо за внимание</div>
+
+</div><!-- /wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* ---------------- tabs ---------------- */
+  var tabs = document.querySelectorAll(".tab");
+  var panels = document.querySelectorAll(".tab-content");
+
+  function activate(id) {
+    tabs.forEach(function (t) { t.classList.toggle("active", t.dataset.tab === id); });
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === id); });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    buildCharts(id);
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener("click", function () { activate(t.dataset.tab); });
+  });
+
+  /* ---------------- chart setup ---------------- */
+  var NEXT = "#0070f3";
+  var START = "#f97316";
+  var GRID = "rgba(255,255,255,0.07)";
+  var TICK = "#93a4bd";
+  var built = {};
+
+  if (window.Chart) {
+    Chart.defaults.font.family = "'Inter', system-ui, sans-serif";
+    Chart.defaults.font.size = 12;
+    Chart.defaults.color = TICK;
+    Chart.defaults.animation.duration = 750;
+  }
+
+  function legend() {
+    return {
+      position: "top",
+      align: "end",
+      labels: {
+        color: "#e8eef7",
+        boxWidth: 12,
+        boxHeight: 12,
+        borderRadius: 3,
+        useBorderRadius: true,
+        padding: 16,
+        font: { size: 13, weight: "600" }
+      }
+    };
+  }
+
+  function tooltip(suffix) {
+    return {
+      backgroundColor: "rgba(9,18,33,0.96)",
+      borderColor: "rgba(255,255,255,0.14)",
+      borderWidth: 1,
+      titleColor: "#fff",
+      bodyColor: "#cfdcee",
+      padding: 12,
+      cornerRadius: 8,
+      displayColors: true,
+      boxWidth: 10,
+      boxHeight: 10,
+      usePointStyle: false,
+      callbacks: {
+        label: function (ctx) {
+          var v = ctx.raw;
+          var text = Array.isArray(v)
+            ? (v[0] === v[1] ? v[0] : v[0] + "–" + v[1])
+            : v;
+          return " " + ctx.dataset.label + ": " + text + suffix;
+        }
+      }
+    };
+  }
+
+  /* столбец показывает середину оценки, подсказка — честный диапазон */
+  function rangeTooltip(ranges, suffix, titleFn) {
+    var t = tooltip(suffix);
+    t.callbacks = {
+      label: function (ctx) {
+        var r = ranges[ctx.dataset.label][ctx.dataIndex];
+        return " " + ctx.dataset.label + ": " + r[0] + "–" + r[1] + suffix;
+      }
+    };
+    if (titleFn) t.callbacks.title = titleFn;
+    return t;
+  }
+
+  function scales(maxY, yTitle) {
+    return {
+      x: {
+        grid: { display: false },
+        border: { color: GRID },
+        ticks: { color: TICK, font: { size: 11.5 }, maxRotation: 0, autoSkip: false }
+      },
+      y: {
+        beginAtZero: true,
+        max: maxY,
+        grid: { color: GRID },
+        border: { display: false },
+        ticks: { color: TICK, stepSize: 2, padding: 8 },
+        title: { display: true, text: yTitle, color: "#6b7f9c", font: { size: 11.5, weight: "600" } }
+      }
+    };
+  }
+
+  var barBase = { borderWidth: 0, borderRadius: 5, borderSkipped: false };
+
+  function buildCharts(tabId) {
+    if (built[tabId] || !window.Chart) return;
+    built[tabId] = true;
+
+    if (tabId === "framework") {
+      new Chart(document.getElementById("chartScores"), {
+        type: "bar",
+        data: {
+          labels: [
+            ["Архитектурная", "совместимость ×2"],
+            ["Безопасность", "и сервер ×3"],
+            ["Гибкость", "деплоя ×2"],
+            ["Производи-", "тельность ×2"],
+            ["DX ×1"],
+            ["Долгосрочная", "перспектива ×2"],
+            ["Сложность", "миграции ×3"]
+          ],
+          datasets: [
+            Object.assign({ label: "Next.js", data: [4, 8, 7, 8, 7, 9, 3], backgroundColor: NEXT }, barBase),
+            Object.assign({ label: "TanStack Start", data: [9, 8, 8, 7, 8, 6, 9], backgroundColor: START }, barBase)
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: legend(), tooltip: tooltip(" из 10") },
+          scales: scales(10, "баллы")
+        }
+      });
+    }
+
+    if (tabId === "migration") {
+      new Chart(document.getElementById("chartEffort"), {
+        type: "bar",
+        data: {
+          labels: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          datasets: [
+            Object.assign({
+              label: "Next.js",
+              data: [4, 5, 7.5, 5, 7, 6, 6.5, 3.5, 9, 2.5],
+              backgroundColor: NEXT
+            }, barBase),
+            Object.assign({
+              label: "TanStack Start",
+              data: [2.5, 4, 1.5, 4, 7, 3.5, 5, 2.5, 8, 2.5],
+              backgroundColor: START
+            }, barBase)
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: legend(),
+            tooltip: rangeTooltip(RANGES, " дн.", function (items) {
+              return "Этап " + items[0].label + " — " + STAGE_NAMES[+items[0].label];
+            })
+          },
+          scales: (function () {
+            var s = scales(10, "дней");
+            s.x.title = { display: true, text: "этап", color: "#6b7f9c", font: { size: 11.5, weight: "600" } };
+            return s;
+          })()
+        }
+      });
+
+      new Chart(document.getElementById("chartWeeks"), {
+        type: "bar",
+        data: {
+          labels: ["Next.js", "TanStack Start"],
+          datasets: [
+            Object.assign({
+              label: "Недель",
+              data: [[11, 14], [7, 10]],
+              backgroundColor: [NEXT, START]
+            }, barBase)
+          ]
+        },
+        options: {
+          indexAxis: "y",
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: (function () {
+              var t = tooltip(" недель");
+              t.callbacks = {
+                title: function (items) { return items[0].label; },
+                label: function (ctx) {
+                  var r = ctx.raw;
+                  return " " + r[0] + "–" + r[1] + " недель до переключения прода";
+                }
+              };
+              return t;
+            })()
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              max: 16,
+              grid: { color: GRID },
+              border: { display: false },
+              ticks: { color: TICK, stepSize: 2 },
+              title: { display: true, text: "недели", color: "#6b7f9c", font: { size: 11.5, weight: "600" } }
+            },
+            y: {
+              grid: { display: false },
+              border: { color: GRID },
+              ticks: { color: "#e8eef7", font: { size: 13, weight: "600" } }
+            }
+          }
+        }
+      });
+
+      new Chart(document.getElementById("chartShare"), {
+        type: "bar",
+        data: {
+          labels: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+          datasets: [
+            Object.assign({
+              label: "Next.js",
+              data: [7.1, 8.9, 13.4, 8.9, 12.5, 10.7, 11.6, 6.3, 16.1, 4.5],
+              backgroundColor: NEXT
+            }, barBase),
+            Object.assign({
+              label: "TanStack Start",
+              data: [6.2, 9.9, 3.7, 9.9, 17.3, 8.6, 12.3, 6.2, 19.8, 6.2],
+              backgroundColor: START
+            }, barBase)
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: legend(),
+            tooltip: (function () {
+              var t = tooltip("%");
+              t.callbacks = {
+                title: function (items) { return "Этап " + items[0].label + " — " + STAGE_NAMES[+items[0].label]; },
+                label: function (ctx) {
+                  return " " + ctx.dataset.label + ": " + ctx.raw.toFixed(1).replace(".", ",") + "% объёма";
+                }
+              };
+              return t;
+            })()
+          },
+          scales: (function () {
+            var s = scales(22, "% от общего объёма");
+            s.y.ticks.stepSize = 4;
+            s.x.title = { display: true, text: "этап", color: "#6b7f9c", font: { size: 11.5, weight: "600" } };
+            return s;
+          })()
+        }
+      });
+    }
+  }
+
+  var STAGE_NAMES = [
+    "подготовка кодовой базы",
+    "инфраструктура",
+    "миграция роутинга",
+    "сервисный слой и React Query",
+    "авторизация и безопасность",
+    "адаптация UI",
+    "SSR",
+    "оптимизация",
+    "тестирование",
+    "переключение прода"
+  ];
+
+  var RANGES = {
+    "Next.js":        [[3, 5], [4, 6], [6, 9], [4, 6], [6, 8], [5, 7], [5, 8], [3, 4], [8, 10], [2, 3]],
+    "TanStack Start": [[2, 3], [3, 5], [1, 2], [3, 5], [6, 8], [3, 4], [4, 6], [2, 3], [7, 9],  [2, 3]]
+  };
+
+  buildCharts("framework");
+})();
+</script>
+</body>
+</html>
